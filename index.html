@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spesimen Genomik — Analisis GC Content Orchidaceae</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F4EC;
+    --paper-deep:#EFE9D8;
+    --ink:#2B2520;
+    --ink-soft:#5B5247;
+    --leaf-deep:#1B5E3A;
+    --leaf:#2E8B57;
+    --leaf-pale:#A9D6B5;
+    --bark:#A9763F;
+    --bark-pale:#C9A876;
+    --rule:#D8CFB8;
+    --a-color:#D98E45;
+    --t-color:#3D7AB5;
+    --g-color:#2E8B57;
+    --c-color:#B5564A;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Sans 3', sans-serif;
+    line-height:1.6;
+  }
+
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px;}
+
+  h1,h2,h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    margin:0;
+    color:var(--leaf-deep);
+  }
+
+  .mono{font-family:'JetBrains Mono', monospace;}
+
+  a{color:var(--leaf-deep);}
+
+  /* ---------- DNA strand divider ---------- */
+  .dna-rule{
+    width:100%;
+    overflow:hidden;
+    white-space:nowrap;
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    letter-spacing:3px;
+    line-height:1;
+    user-select:none;
+    opacity:0.9;
+  }
+  .dna-rule span.A{color:var(--a-color);}
+  .dna-rule span.T{color:var(--t-color);}
+  .dna-rule span.G{color:var(--g-color);}
+  .dna-rule span.C{color:var(--c-color);}
+
+  /* ---------- HEADER / HERO ---------- */
+  header.hero{
+    padding:72px 0 56px;
+    border-bottom:1px solid var(--rule);
+    position:relative;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--bark);
+    margin-bottom:18px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"◆";
+    color:var(--leaf);
+  }
+  h1.title{
+    font-size:clamp(36px, 6vw, 58px);
+    line-height:1.05;
+    letter-spacing:-0.01em;
+    max-width:780px;
+  }
+  h1.title em{
+    font-style:italic;
+    color:var(--bark);
+  }
+  .subtitle{
+    margin-top:22px;
+    font-size:18px;
+    color:var(--ink-soft);
+    max-width:620px;
+  }
+
+  .specimen-card{
+    margin-top:42px;
+    background:var(--paper-deep);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:26px 30px;
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:24px;
+    align-items:center;
+  }
+  .specimen-card .label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .specimen-card .seq-snippet{
+    font-family:'JetBrains Mono', monospace;
+    font-size:15px;
+    letter-spacing:1px;
+    word-break:break-all;
+  }
+  .specimen-card .species-name{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:22px;
+    color:var(--leaf-deep);
+    margin-top:10px;
+  }
+  .gc-badge{
+    text-align:center;
+    background:var(--leaf-deep);
+    color:var(--paper);
+    border-radius:4px;
+    padding:18px 24px;
+    min-width:120px;
+  }
+  .gc-badge .num{
+    font-family:'Fraunces', serif;
+    font-size:34px;
+    font-weight:600;
+    line-height:1;
+  }
+  .gc-badge .unit{font-size:13px;opacity:0.85;margin-top:4px;}
+
+  /* ---------- SECTION GENERIC ---------- */
+  section{padding:64px 0;}
+  section.alt{background:var(--paper-deep);}
+  .section-head{
+    display:flex;
+    align-items:baseline;
+    gap:16px;
+    margin-bottom:8px;
+  }
+  .section-num{
+    font-family:'JetBrains Mono', monospace;
+    color:var(--bark-pale);
+    font-size:15px;
+  }
+  .section-head h2{font-size:clamp(26px,3.4vw,34px);}
+  .section-desc{
+    color:var(--ink-soft);
+    max-width:640px;
+    margin-top:14px;
+    margin-bottom:36px;
+  }
+
+  /* ---------- PIPELINE STEPS ---------- */
+  .pipeline{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+    gap:18px;
+  }
+  .step{
+    background:var(--paper);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:22px 20px;
+    position:relative;
+  }
+  section.alt .step{background:var(--paper);}
+  .step .step-no{
+    font-family:'Fraunces', serif;
+    font-size:30px;
+    color:var(--leaf-pale);
+    font-weight:600;
+    line-height:1;
+  }
+  .step h3{
+    font-size:17px;
+    margin-top:10px;
+    color:var(--ink);
+    font-family:'Source Sans 3', sans-serif;
+    font-weight:700;
+  }
+  .step p{
+    font-size:14.5px;
+    color:var(--ink-soft);
+    margin-top:8px;
+  }
+  .step code{
+    font-family:'JetBrains Mono', monospace;
+    background:var(--paper-deep);
+    padding:1px 5px;
+    border-radius:3px;
+    font-size:13px;
+  }
+
+  /* ---------- CODE BLOCK ---------- */
+  .code-block{
+    background:#23211C;
+    color:#E8E2D4;
+    border-radius:6px;
+    padding:22px 24px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:13.5px;
+    line-height:1.7;
+    overflow-x:auto;
+    margin:28px 0;
+  }
+  .code-block .c-kw{color:#E0A458;}
+  .code-block .c-str{color:#9DC68C;}
+  .code-block .c-com{color:#7C7669;font-style:italic;}
+  .code-block .c-fn{color:#7FB4D9;}
+
+  /* ---------- TOP 3 CARDS ---------- */
+  .top3-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+  }
+  .top-card{
+    border:1px solid var(--rule);
+    border-radius:6px;
+    overflow:hidden;
+    background:var(--paper);
+  }
+  .top-card .rank-bar{
+    background:var(--leaf-deep);
+    color:var(--paper);
+    padding:10px 18px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    display:flex;
+    justify-content:space-between;
+  }
+  .top-card.rank-1 .rank-bar{background:#13442A;}
+  .top-card-body{padding:20px 18px;}
+  .top-card .sp-name{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:19px;
+    color:var(--leaf-deep);
+  }
+  .top-card .acc{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:4px;
+  }
+  .gc-meter{margin-top:16px;}
+  .gc-meter .track{
+    background:var(--paper-deep);
+    border-radius:20px;
+    height:8px;
+    overflow:hidden;
+  }
+  .gc-meter .fill{
+    height:100%;
+    background:linear-gradient(90deg, var(--leaf), var(--leaf-deep));
+    border-radius:20px;
+  }
+  .gc-meter .val{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    margin-top:6px;
+    color:var(--ink-soft);
+  }
+  .composition{
+    display:flex;
+    gap:10px;
+    margin-top:16px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+  }
+  .composition span{
+    padding:3px 7px;
+    border-radius:3px;
+    color:#fff;
+  }
+  .composition .A{background:var(--a-color);}
+  .composition .T{background:var(--t-color);}
+  .composition .G{background:var(--g-color);}
+  .composition .C{background:var(--c-color);}
+
+  /* ---------- CHART AREA ---------- */
+  .chart-card{
+    background:var(--paper);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:28px;
+  }
+  #barChart{width:100%;height:auto;display:block;}
+  .legend-row{
+    display:flex;
+    gap:22px;
+    flex-wrap:wrap;
+    margin-top:18px;
+    font-size:13px;
+    color:var(--ink-soft);
+    align-items:center;
+  }
+  .legend-dot{
+    display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;
+  }
+
+  /* ---------- TABLE ---------- */
+  .table-wrap{
+    max-height:480px;
+    overflow-y:auto;
+    border:1px solid var(--rule);
+    border-radius:6px;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13.5px;
+  }
+  thead th{
+    position:sticky;top:0;
+    background:var(--leaf-deep);
+    color:var(--paper);
+    text-align:left;
+    padding:10px 14px;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:500;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+  }
+  tbody td{
+    padding:9px 14px;
+    border-bottom:1px solid var(--rule);
+  }
+  tbody tr:nth-child(even){background:var(--paper-deep);}
+  tbody tr:hover{background:var(--leaf-pale);}
+  td.species{font-family:'Fraunces', serif;font-style:italic;}
+  td.num{font-family:'JetBrains Mono', monospace;text-align:right;}
+
+  .search-row{
+    display:flex;
+    gap:12px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .search-row input{
+    flex:1;
+    min-width:200px;
+    padding:10px 14px;
+    border:1px solid var(--rule);
+    border-radius:4px;
+    font-family:'Source Sans 3', sans-serif;
+    font-size:14px;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .search-row input:focus{outline:2px solid var(--leaf);outline-offset:1px;}
+
+  /* ---------- LINKS / FOOTER ---------- */
+  .links-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:18px;
+  }
+  .link-card{
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:22px;
+    display:block;
+    text-decoration:none;
+    color:var(--ink);
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  .link-card:hover{border-color:var(--leaf);transform:translateY(-2px);}
+  .link-card .lc-icon{font-size:22px;color:var(--leaf-deep);}
+  .link-card h3{font-family:'Source Sans 3',sans-serif;font-size:16px;margin-top:10px;color:var(--ink);}
+  .link-card p{font-size:13.5px;color:var(--ink-soft);margin-top:6px;}
+
+  footer{
+    padding:48px 0 60px;
+    border-top:1px solid var(--rule);
+    color:var(--ink-soft);
+    font-size:13.5px;
+  }
+  footer .mono{color:var(--bark);}
+
+  @media (max-width:760px){
+    .specimen-card{grid-template-columns:1fr;}
+    .top3-grid{grid-template-columns:1fr;}
+  }
+
+  /* focus visibility */
+  a:focus-visible, input:focus-visible{outline:2px solid var(--leaf-deep);outline-offset:2px;}
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+  }
+</style>
+</head>
+<body>
+
+<div class="dna-rule" id="dnaRuleTop"></div>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">Mini Project · Bioinformatika Pipeline</div>
+    <h1 class="title">Membaca arsip genom dari <em>Orchidaceae</em>,<br>satu basa pada satu waktu.</h1>
+    <p class="subtitle">
+      Pipeline Python sederhana yang mengunduh sekuens FASTA dari NCBI GenBank,
+      menghitung komposisi nukleotida tiap sekuens, dan mengurutkan 94 spesimen anggrek
+      berdasarkan kandungan GC — sebuah penanda penting kestabilan untai DNA.
+    </p>
+
+    <div class="specimen-card">
+      <div>
+        <div class="label">Spesimen GC tertinggi — accession GenBank Z78533.1</div>
+        <div class="species-name">Cypripedium irapeanum</div>
+        <div class="seq-snippet" id="heroSeq">CGTAACAAGGTTTCCGTAGGTGAACCTGCGGAAGGATCATTGATGAGACCGTGGAATAAACGATCGAGTG…</div>
+      </div>
+      <div class="gc-badge">
+        <div class="num">59.6</div>
+        <div class="unit">% GC content</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= TENTANG DATA ================= -->
+  <section>
+    <div class="section-head">
+      <span class="section-num">00</span>
+      <h2>Tentang data</h2>
+    </div>
+    <p class="section-desc">
+      Dataset berisi <strong>94 sekuens nukleotida</strong> gen <strong>5.8S rRNA</strong> beserta
+      wilayah <strong>ITS1 dan ITS2</strong> (Internal Transcribed Spacer) dari berbagai spesies
+      anggrek famili Orchidaceae — genus <em>Cypripedium</em>, <em>Paphiopedilum</em>,
+      <em>Phragmipedium</em>, dan <em>Mexipedium</em>. Setiap sekuens memiliki nomor akses
+      GenBank resmi yang dapat ditelusuri langsung di NCBI Nucleotide
+      (<span class="mono">https://www.ncbi.nlm.nih.gov/nuccore/</span>).
+    </p>
+    <div class="pipeline" style="grid-template-columns:repeat(3,1fr);">
+      <div class="step">
+        <div class="step-no">94</div>
+        <h3>Sekuens FASTA</h3>
+        <p>Diunduh dari arsip GenBank, format multi-FASTA standar.</p>
+      </div>
+      <div class="step">
+        <div class="step-no">4</div>
+        <h3>Genus tercakup</h3>
+        <p><em>Cypripedium, Paphiopedilum, Phragmipedium, Mexipedium</em>.</p>
+      </div>
+      <div class="step">
+        <div class="step-no">~750</div>
+        <h3>Rata-rata panjang (bp)</h3>
+        <p>Mencakup gen 5.8S rRNA dan wilayah ITS1–ITS2.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="dna-rule" id="dnaRuleMid"></div>
+
+  <!-- ================= PIPELINE ================= -->
+  <section class="alt">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <h2>Tahapan pipeline</h2>
+    </div>
+    <p class="section-desc">
+      Tujuh langkah berurutan, masing-masing fungsi Python murni tanpa pustaka analisis
+      sekuens eksternal — hanya struktur data dasar: <code>list</code> dan <code>dict</code>.
+    </p>
+    <div class="pipeline">
+      <div class="step">
+        <div class="step-no">01</div>
+        <h3>Membaca file FASTA</h3>
+        <p>Parsing manual baris demi baris, memisahkan header (<code>&gt;</code>) dari isi sekuens.</p>
+      </div>
+      <div class="step">
+        <div class="step-no">02</div>
+        <h3>Menyimpan dalam List</h3>
+        <p>Setiap record menjadi satu <code>dict</code> dalam <code>list data_sekuens</code>.</p>
+      </div>
+      <div class="step">
+        <div class="step-no">03</div>
+        <h3>Frekuensi nukleotida</h3>
+        <p>Dihitung dengan <code>dict</code> — pasangan basa (A/T/G/C) dan jumlah kemunculannya.</p>
+      </div>
+      <div class="step">
+        <div class="step-no">04</div>
+        <h3>Urutkan oleh GC Content</h3>
+        <p><code>sorted()</code> dengan <code>key=lambda</code>, menurun dari GC tertinggi.</p>
+      </div>
+      <div class="step">
+        <div class="step-no">05</div>
+        <h3>3 sekuens terbaik</h3>
+        <p>Slice tiga teratas dari hasil pengurutan sebagai sorotan laporan.</p>
+      </div>
+      <div class="step">
+        <div class="step-no">06</div>
+        <h3>Visualisasi grafik</h3>
+        <p>Bar chart seluruh sekuens via Matplotlib, disorot pada tiga teratas.</p>
+      </div>
+      <div class="step">
+        <div class="step-no">07</div>
+        <h3>Ekspor ke CSV</h3>
+        <p>Seluruh hasil dituliskan rapi ke <code>hasil_analisis_gc.csv</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= KODE ================= -->
+  <section>
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <h2>Inti kode</h2>
+    </div>
+    <p class="section-desc">
+      Dua fungsi yang menjadi jantung pipeline — pembacaan FASTA ke dalam list,
+      dan penghitungan frekuensi nukleotida dengan dictionary. Kode lengkap tersedia di repositori GitHub.
+    </p>
+    <div class="code-block">
+<span class="c-kw">def</span> <span class="c-fn">baca_fasta</span>(filepath):
+    <span class="c-com"># LIST utama untuk menyimpan seluruh record sekuens</span>
+    daftar_sekuens = []
+    header, seq_buffer = <span class="c-kw">None</span>, []
+
+    <span class="c-kw">with</span> <span class="c-fn">open</span>(filepath, <span class="c-str">"r"</span>) <span class="c-kw">as</span> f:
+        <span class="c-kw">for</span> baris <span class="c-kw">in</span> f:
+            baris = baris.strip()
+            <span class="c-kw">if</span> baris.startswith(<span class="c-str">">"</span>):
+                <span class="c-kw">if</span> header:
+                    daftar_sekuens.append({
+                        <span class="c-str">"id"</span>: header.split()[0][1:],
+                        <span class="c-str">"sekuens"</span>: <span class="c-str">""</span>.join(seq_buffer).upper()
+                    })
+                header, seq_buffer = baris, []
+            <span class="c-kw">elif</span> baris:
+                seq_buffer.append(baris)
+    <span class="c-kw">return</span> daftar_sekuens
+
+
+<span class="c-kw">def</span> <span class="c-fn">hitung_frekuensi_nukleotida</span>(sekuens):
+    <span class="c-com"># DICTIONARY untuk frekuensi tiap basa: {'A':.., 'T':.., 'G':.., 'C':..}</span>
+    frekuensi = {}
+    <span class="c-kw">for</span> basa <span class="c-kw">in</span> sekuens:
+        frekuensi[basa] = frekuensi.get(basa, 0) + 1
+    <span class="c-kw">return</span> frekuensi
+    </div>
+  </section>
+
+  <div class="dna-rule" id="dnaRuleMid2"></div>
+
+  <!-- ================= TOP 3 ================= -->
+  <section class="alt">
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <h2>Tiga sekuens terbaik</h2>
+    </div>
+    <p class="section-desc">
+      Diurutkan berdasarkan persentase GC Content tertinggi dari seluruh 94 sekuens.
+    </p>
+    <div class="top3-grid" id="top3Grid"></div>
+  </section>
+
+  <!-- ================= GRAFIK ================= -->
+  <section>
+    <div class="section-head">
+      <span class="section-num">04</span>
+      <h2>Visualisasi GC Content</h2>
+    </div>
+    <p class="section-desc">
+      Setiap batang merepresentasikan satu sekuens, diurutkan menurun. Tiga batang hijau tua
+      di sisi kiri adalah tiga sekuens dengan GC Content tertinggi.
+    </p>
+    <div class="chart-card">
+      <svg id="barChart" viewBox="0 0 1000 420"></svg>
+      <div class="legend-row">
+        <span><span class="legend-dot" style="background:#13442A;"></span>3 sekuens terbaik</span>
+        <span><span class="legend-dot" style="background:#A9D6B5;"></span>Sekuens lainnya</span>
+        <span id="avgLabel"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TABEL ================= -->
+  <section class="alt">
+    <div class="section-head">
+      <span class="section-num">05</span>
+      <h2>Tabel data lengkap</h2>
+    </div>
+    <p class="section-desc">
+      Seluruh 94 sekuens beserta komposisi nukleotida dan GC Content — identik dengan isi
+      <span class="mono">hasil_analisis_gc.csv</span>. Gunakan kolom pencarian untuk menyaring spesies.
+    </p>
+    <div class="search-row">
+      <input type="text" id="searchBox" placeholder="Cari spesies atau accession number, misal: Paphiopedilum atau Z78533">
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Spesies</th>
+            <th>Accession</th>
+            <th>Panjang (bp)</th>
+            <th>A</th><th>T</th><th>G</th><th>C</th>
+            <th>GC Content (%)</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= LINK & SUMBER ================= -->
+  <section>
+    <div class="section-head">
+      <span class="section-num">06</span>
+      <h2>Berkas &amp; sumber</h2>
+    </div>
+    <p class="section-desc">Kode, data mentah, dan laporan lengkap tersedia di repositori berikut.</p>
+    <div class="links-grid">
+      <a class="link-card" href="https://github.com" target="_blank" rel="noopener">
+        <div class="lc-icon">⌥</div>
+        <h3>Kode sumber — GitHub</h3>
+        <p>pipeline.py, dataset FASTA, dan README dokumentasi teknis.</p>
+      </a>
+      <a class="link-card" href="https://www.ncbi.nlm.nih.gov/nuccore/?term=Cypripedium+5.8S+rRNA+ITS" target="_blank" rel="noopener">
+        <div class="lc-icon">⌬</div>
+        <h3>Sumber data — NCBI GenBank</h3>
+        <p>Pencarian nucleotide untuk gen 5.8S rRNA / ITS Orchidaceae.</p>
+      </a>
+      <a class="link-card" href="hasil_analisis_gc.csv">
+        <div class="lc-icon">▤</div>
+        <h3>Unduh CSV</h3>
+        <p>Hasil analisis lengkap, 94 baris data terurut.</p>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="dna-rule" id="dnaRuleFooter" style="margin-bottom:20px;"></div>
+    Dibuat untuk Mini Project Analisis Pipeline Sederhana ·
+    Data sekuens bersumber dari <span class="mono">NCBI GenBank</span> ·
+    Diproses dengan Python (list &amp; dictionary) dan divisualisasikan dengan Matplotlib &amp; SVG.
+  </footer>
+
+</div>
+
+<script>
+const DATA = [{"rank": 1, "id": "CIZ78533", "accession": "Z78533.1", "species": "C.irapeanum", "desc": "gi|2765658|emb|Z78533.1|CIZ78533 C.irapeanum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 740, "A": 144, "T": 155, "G": 241, "C": 200, "gc": 59.59}, {"rank": 2, "id": "PWZ78500", "accession": "Z78500.1", "species": "P.warszewiczianum", "desc": "gi|2765625|emb|Z78500.1|PWZ78500 P.warszewiczianum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 767, "A": 149, "T": 179, "G": 243, "C": 196, "gc": 57.24}, {"rank": 3, "id": "CFZ78531", "accession": "Z78531.1", "species": "C.fasciculatum", "desc": "gi|2765656|emb|Z78531.1|CFZ78531 C.fasciculatum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 748, "A": 154, "T": 167, "G": 235, "C": 192, "gc": 57.09}, {"rank": 4, "id": "PCZ78510", "accession": "Z78510.1", "species": "P.caricinum", "desc": "gi|2765635|emb|Z78510.1|PCZ78510 P.caricinum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 750, "A": 151, "T": 171, "G": 218, "C": 210, "gc": 57.07}, {"rank": 5, "id": "PLZ78508", "accession": "Z78508.1", "species": "P.longifolium", "desc": "gi|2765633|emb|Z78508.1|PLZ78508 P.longifolium 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 741, "A": 151, "T": 169, "G": 229, "C": 192, "gc": 56.82}, {"rank": 6, "id": "PCZ78501", "accession": "Z78501.1", "species": "P.caudatum", "desc": "gi|2765626|emb|Z78501.1|PCZ78501 P.caudatum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 770, "A": 155, "T": 180, "G": 243, "C": 192, "gc": 56.49}, {"rank": 7, "id": "PBZ78502", "accession": "Z78502.1", "species": "P.boissierianum", "desc": "gi|2765627|emb|Z78502.1|PBZ78502 P.boissierianum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 757, "A": 156, "T": 174, "G": 228, "C": 199, "gc": 56.41}, {"rank": 8, "id": "PLZ78507", "accession": "Z78507.1", "species": "P.lindenii", "desc": "gi|2765632|emb|Z78507.1|PLZ78507 P.lindenii 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 740, "A": 153, "T": 170, "G": 224, "C": 193, "gc": 56.35}, {"rank": 9, "id": "PCZ78503", "accession": "Z78503.1", "species": "P.czerwiakowianum", "desc": "gi|2765628|emb|Z78503.1|PCZ78503 P.czerwiakowianum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 727, "A": 149, "T": 169, "G": 218, "C": 191, "gc": 56.26}, {"rank": 10, "id": "PEZ78511", "accession": "Z78511.1", "species": "P.exstaminodium", "desc": "gi|2765636|emb|Z78511.1|PEZ78511 P.exstaminodium 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 745, "A": 152, "T": 174, "G": 226, "C": 193, "gc": 56.24}, {"rank": 11, "id": "PWZ78512", "accession": "Z78512.1", "species": "P.wallisii", "desc": "gi|2765637|emb|Z78512.1|PWZ78512 P.wallisii 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 762, "A": 159, "T": 175, "G": 229, "C": 199, "gc": 56.17}, {"rank": 12, "id": "PSZ78514", "accession": "Z78514.1", "species": "P.schlimii", "desc": "gi|2765639|emb|Z78514.1|PSZ78514 P.schlimii 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 755, "A": 158, "T": 174, "G": 222, "C": 201, "gc": 56.03}, {"rank": 13, "id": "PLZ78506", "accession": "Z78506.1", "species": "P.lindleyanum", "desc": "gi|2765631|emb|Z78506.1|PLZ78506 P.lindleyanum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 727, "A": 153, "T": 167, "G": 219, "C": 188, "gc": 55.98}, {"rank": 14, "id": "PBZ78513", "accession": "Z78513.1", "species": "P.besseae", "desc": "gi|2765638|emb|Z78513.1|PBZ78513 P.besseae 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 742, "A": 160, "T": 167, "G": 220, "C": 195, "gc": 55.93}, {"rank": 15, "id": "PSZ78505", "accession": "Z78505.1", "species": "P.sargentianum", "desc": "gi|2765630|emb|Z78505.1|PSZ78505 P.sargentianum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 711, "A": 149, "T": 166, "G": 214, "C": 182, "gc": 55.7}, {"rank": 16, "id": "PPZ78509", "accession": "Z78509.1", "species": "P.pearcei", "desc": "gi|2765634|emb|Z78509.1|PPZ78509 P.pearcei 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 731, "A": 151, "T": 174, "G": 224, "C": 182, "gc": 55.54}, {"rank": 17, "id": "PKZ78504", "accession": "Z78504.1", "species": "P.kaiteurum", "desc": "gi|2765629|emb|Z78504.1|PKZ78504 P.kaiteurum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 743, "A": 162, "T": 171, "G": 216, "C": 194, "gc": 55.18}, {"rank": 18, "id": "MXZ78515", "accession": "Z78515.1", "species": "M.xerophyticum", "desc": "gi|2765640|emb|Z78515.1|MXZ78515 M.xerophyticum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 765, "A": 159, "T": 195, "G": 223, "C": 188, "gc": 53.73}, {"rank": 19, "id": "PEZ78495", "accession": "Z78495.1", "species": "P.emersonii", "desc": "gi|2765620|emb|Z78495.1|PEZ78495 P.emersonii 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 789, "A": 172, "T": 198, "G": 222, "C": 197, "gc": 53.11}, {"rank": 20, "id": "PDZ78497", "accession": "Z78497.1", "species": "P.delenatii", "desc": "gi|2765622|emb|Z78497.1|PDZ78497 P.delenatii 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 788, "A": 179, "T": 195, "G": 217, "C": 197, "gc": 52.54}, {"rank": 21, "id": "PEZ78482", "accession": "Z78482.1", "species": "P.exul", "desc": "gi|2765607|emb|Z78482.1|PEZ78482 P.exul 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 629, "A": 143, "T": 156, "G": 167, "C": 161, "gc": 52.15}, {"rank": 22, "id": "PAZ78496", "accession": "Z78496.1", "species": "P.armeniacum", "desc": "gi|2765621|emb|Z78496.1|PAZ78496 P.armeniacum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 774, "A": 171, "T": 202, "G": 217, "C": 184, "gc": 51.81}, {"rank": 23, "id": "PVZ78477", "accession": "Z78477.1", "species": "P.victoria", "desc": "gi|2765602|emb|Z78477.1|PVZ78477 P.victoria 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 716, "A": 168, "T": 179, "G": 196, "C": 173, "gc": 51.54}, {"rank": 24, "id": "CRZ78518", "accession": "Z78518.1", "species": "C.reginae", "desc": "gi|2765643|emb|Z78518.1|CRZ78518 C.reginae 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 658, "A": 147, "T": 172, "G": 182, "C": 157, "gc": 51.52}, {"rank": 25, "id": "PMZ78499", "accession": "Z78499.1", "species": "P.micranthum", "desc": "gi|2765624|emb|Z78499.1|PMZ78499 P.micranthum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 759, "A": 170, "T": 198, "G": 206, "C": 185, "gc": 51.52}, {"rank": 26, "id": "PTZ78488", "accession": "Z78488.1", "species": "P.tigrinum", "desc": "gi|2765613|emb|Z78488.1|PTZ78488 P.tigrinum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 696, "A": 164, "T": 174, "G": 184, "C": 174, "gc": 51.44}, {"rank": 27, "id": "PVZ78447", "accession": "Z78447.1", "species": "P.venustum", "desc": "gi|2765572|emb|Z78447.1|PVZ78447 P.venustum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 694, "A": 162, "T": 175, "G": 189, "C": 168, "gc": 51.44}, {"rank": 28, "id": "PFZ78490", "accession": "Z78490.1", "species": "P.fairrieanum", "desc": "gi|2765615|emb|Z78490.1|PFZ78490 P.fairrieanum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 728, "A": 165, "T": 189, "G": 197, "C": 177, "gc": 51.37}, {"rank": 29, "id": "PMZ78498", "accession": "Z78498.1", "species": "P.malipoense", "desc": "gi|2765623|emb|Z78498.1|PMZ78498 P.malipoense 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 750, "A": 172, "T": 193, "G": 198, "C": 187, "gc": 51.33}, {"rank": 30, "id": "PDZ78489", "accession": "Z78489.1", "species": "P.druryi", "desc": "gi|2765614|emb|Z78489.1|PDZ78489 P.druryi 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 740, "A": 173, "T": 188, "G": 202, "C": 177, "gc": 51.22}, {"rank": 31, "id": "PGZ78463", "accession": "Z78463.1", "species": "P.glanduliferum", "desc": "gi|2765588|emb|Z78463.1|PGZ78463 P.glanduliferum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 738, "A": 167, "T": 193, "G": 200, "C": 178, "gc": 51.22}, {"rank": 32, "id": "PGZ78493", "accession": "Z78493.1", "species": "P.godefroyae", "desc": "gi|2765618|emb|Z78493.1|PGZ78493 P.godefroyae 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 719, "A": 164, "T": 187, "G": 194, "C": 174, "gc": 51.18}, {"rank": 33, "id": "PVZ78478", "accession": "Z78478.1", "species": "P.victoria", "desc": "gi|2765603|emb|Z78478.1|PVZ78478 P.victoria 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 636, "A": 147, "T": 164, "G": 178, "C": 147, "gc": 51.1}, {"rank": 34, "id": "PHZ78487", "accession": "Z78487.1", "species": "P.hirsutissimum", "desc": "gi|2765612|emb|Z78487.1|PHZ78487 P.hirsutissimum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 732, "A": 173, "T": 185, "G": 194, "C": 180, "gc": 51.09}, {"rank": 35, "id": "PHZ78458", "accession": "Z78458.1", "species": "P.hennisianum", "desc": "gi|2765583|emb|Z78458.1|PHZ78458 P.hennisianum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 738, "A": 167, "T": 194, "G": 199, "C": 178, "gc": 51.08}, {"rank": 36, "id": "PBZ78486", "accession": "Z78486.1", "species": "P.barbigerum", "desc": "gi|2765611|emb|Z78486.1|PBZ78486 P.barbigerum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 731, "A": 171, "T": 187, "G": 195, "C": 178, "gc": 51.03}, {"rank": 37, "id": "PSZ78473", "accession": "Z78473.1", "species": "P.sanderianum", "desc": "gi|2765598|emb|Z78473.1|PSZ78473 P.sanderianum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 626, "A": 139, "T": 168, "G": 164, "C": 155, "gc": 50.96}, {"rank": 38, "id": "PSZ78441", "accession": "Z78441.1", "species": "P.superbiens", "desc": "gi|2765566|emb|Z78441.1|PSZ78441 P.superbiens 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 703, "A": 164, "T": 181, "G": 183, "C": 175, "gc": 50.92}, {"rank": 39, "id": "PPZ78479", "accession": "Z78479.1", "species": "P.primulinum", "desc": "gi|2765604|emb|Z78479.1|PPZ78479 P.primulinum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 700, "A": 171, "T": 173, "G": 188, "C": 168, "gc": 50.86}, {"rank": 40, "id": "PPZ78466", "accession": "Z78466.1", "species": "P.philippinense", "desc": "gi|2765591|emb|Z78466.1|PPZ78466 P.philippinense 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 641, "A": 144, "T": 171, "G": 168, "C": 158, "gc": 50.86}, {"rank": 41, "id": "PCZ78484", "accession": "Z78484.1", "species": "P.charlesworthii", "desc": "gi|2765609|emb|Z78484.1|PCZ78484 P.charlesworthii 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 720, "A": 171, "T": 183, "G": 192, "C": 174, "gc": 50.83}, {"rank": 42, "id": "PSZ78467", "accession": "Z78467.1", "species": "P.stonei", "desc": "gi|2765592|emb|Z78467.1|PSZ78467 P.stonei 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 730, "A": 170, "T": 189, "G": 193, "C": 178, "gc": 50.82}, {"rank": 43, "id": "PHZ78451", "accession": "Z78451.1", "species": "P.hookerae", "desc": "gi|2765576|emb|Z78451.1|PHZ78451 P.hookerae 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 730, "A": 176, "T": 183, "G": 183, "C": 188, "gc": 50.82}, {"rank": 44, "id": "PUZ78445", "accession": "Z78445.1", "species": "P.urbanianum", "desc": "gi|2765570|emb|Z78445.1|PUZ78445 P.urbanianum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 715, "A": 161, "T": 191, "G": 189, "C": 174, "gc": 50.77}, {"rank": 45, "id": "PBZ78442", "accession": "Z78442.1", "species": "P.bullenianum", "desc": "gi|2765567|emb|Z78442.1|PBZ78442 P.bullenianum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 721, "A": 171, "T": 184, "G": 187, "C": 179, "gc": 50.76}, {"rank": 46, "id": "PHZ78485", "accession": "Z78485.1", "species": "P.henryanum", "desc": "gi|2765610|emb|Z78485.1|PHZ78485 P.henryanum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 735, "A": 173, "T": 189, "G": 195, "C": 178, "gc": 50.75}, {"rank": 47, "id": "PKZ78474", "accession": "Z78474.1", "species": "P.kolopakingii", "desc": "gi|2765599|emb|Z78474.1|PKZ78474 P.kolopakingii 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 733, "A": 170, "T": 191, "G": 188, "C": 184, "gc": 50.75}, {"rank": 48, "id": "PCZ78460", "accession": "Z78460.1", "species": "P.ciliolare", "desc": "gi|2765585|emb|Z78460.1|PCZ78460 P.ciliolare 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 745, "A": 172, "T": 195, "G": 199, "C": 179, "gc": 50.74}, {"rank": 49, "id": "CYZ78527", "accession": "Z78527.1", "species": "C.yatabeanum", "desc": "gi|2765652|emb|Z78527.1|CYZ78527 C.yatabeanum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 718, "A": 167, "T": 187, "G": 205, "C": 159, "gc": 50.7}, {"rank": 50, "id": "PFZ78454", "accession": "Z78454.1", "species": "P.fowliei", "desc": "gi|2765579|emb|Z78454.1|PFZ78454 P.fowliei 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 695, "A": 161, "T": 181, "G": 181, "C": 171, "gc": 50.65}, {"rank": 51, "id": "PBZ78492", "accession": "Z78492.1", "species": "P.bellatulum", "desc": "gi|2765617|emb|Z78492.1|PBZ78492 P.bellatulum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 743, "A": 167, "T": 200, "G": 199, "C": 177, "gc": 50.61}, {"rank": 52, "id": "PPZ78450", "accession": "Z78450.1", "species": "P.papuanum", "desc": "gi|2765575|emb|Z78450.1|PPZ78450 P.papuanum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 706, "A": 168, "T": 181, "G": 179, "C": 178, "gc": 50.57}, {"rank": 53, "id": "PTZ78456", "accession": "Z78456.1", "species": "P.tonsum", "desc": "gi|2765581|emb|Z78456.1|PTZ78456 P.tonsum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 740, "A": 171, "T": 195, "G": 199, "C": 175, "gc": 50.54}, {"rank": 54, "id": "PGZ78476", "accession": "Z78476.1", "species": "P.glaucophyllum", "desc": "gi|2765601|emb|Z78476.1|PGZ78476 P.glaucophyllum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 592, "A": 136, "T": 157, "G": 152, "C": 147, "gc": 50.51}, {"rank": 55, "id": "PCZ78457", "accession": "Z78457.1", "species": "P.callosum", "desc": "gi|2765582|emb|Z78457.1|PCZ78457 P.callosum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 739, "A": 170, "T": 196, "G": 191, "C": 182, "gc": 50.47}, {"rank": 56, "id": "PSZ78453", "accession": "Z78453.1", "species": "P.schoseri", "desc": "gi|2765578|emb|Z78453.1|PSZ78453 P.schoseri 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 745, "A": 174, "T": 195, "G": 194, "C": 182, "gc": 50.47}, {"rank": 57, "id": "CAZ78525", "accession": "Z78525.1", "species": "C.acaule", "desc": "gi|2765650|emb|Z78525.1|CAZ78525 C.acaule 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 704, "A": 159, "T": 190, "G": 194, "C": 161, "gc": 50.43}, {"rank": 58, "id": "CGZ78526", "accession": "Z78526.1", "species": "C.guttatum", "desc": "gi|2765651|emb|Z78526.1|CGZ78526 C.guttatum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 730, "A": 170, "T": 192, "G": 205, "C": 163, "gc": 50.41}, {"rank": 59, "id": "PWZ78461", "accession": "Z78461.1", "species": "P.wardii", "desc": "gi|2765586|emb|Z78461.1|PWZ78461 P.wardii 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 732, "A": 174, "T": 189, "G": 179, "C": 190, "gc": 50.41}, {"rank": 60, "id": "PDZ78459", "accession": "Z78459.1", "species": "P.dayanum", "desc": "gi|2765584|emb|Z78459.1|PDZ78459 P.dayanum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 744, "A": 171, "T": 198, "G": 198, "C": 177, "gc": 50.4}, {"rank": 61, "id": "PAZ78448", "accession": "Z78448.1", "species": "P.argus", "desc": "gi|2765573|emb|Z78448.1|PAZ78448 P.argus 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 742, "A": 172, "T": 194, "G": 197, "C": 177, "gc": 50.4}, {"rank": 62, "id": "CHZ78523", "accession": "Z78523.1", "species": "C.himalaicum", "desc": "gi|2765648|emb|Z78523.1|CHZ78523 C.himalaicum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 709, "A": 156, "T": 196, "G": 197, "C": 160, "gc": 50.35}, {"rank": 63, "id": "PCZ78491", "accession": "Z78491.1", "species": "P.concolor", "desc": "gi|2765616|emb|Z78491.1|PCZ78491 P.concolor 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 737, "A": 172, "T": 194, "G": 196, "C": 175, "gc": 50.34}, {"rank": 64, "id": "PGZ78464", "accession": "Z78464.1", "species": "P.glanduliferum", "desc": "gi|2765589|emb|Z78464.1|PGZ78464 P.glanduliferum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 733, "A": 170, "T": 194, "G": 188, "C": 181, "gc": 50.34}, {"rank": 65, "id": "PIZ78481", "accession": "Z78481.1", "species": "P.insigne", "desc": "gi|2765606|emb|Z78481.1|PIZ78481 P.insigne 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 572, "A": 132, "T": 153, "G": 150, "C": 137, "gc": 50.17}, {"rank": 66, "id": "PAZ78446", "accession": "Z78446.1", "species": "P.acmodontum", "desc": "gi|2765571|emb|Z78446.1|PAZ78446 P.acmodontum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 712, "A": 168, "T": 187, "G": 187, "C": 170, "gc": 50.14}, {"rank": 67, "id": "PGZ78480", "accession": "Z78480.1", "species": "P.gratrixianum", "desc": "gi|2765605|emb|Z78480.1|PGZ78480 P.gratrixianum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 587, "A": 138, "T": 155, "G": 153, "C": 141, "gc": 50.09}, {"rank": 68, "id": "PNZ78494", "accession": "Z78494.1", "species": "P.niveum", "desc": "gi|2765619|emb|Z78494.1|PNZ78494 P.niveum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 688, "A": 162, "T": 182, "G": 181, "C": 163, "gc": 50.0}, {"rank": 69, "id": "PDZ78471", "accession": "Z78471.1", "species": "P.dianthum", "desc": "gi|2765596|emb|Z78471.1|PDZ78471 P.dianthum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 740, "A": 178, "T": 192, "G": 190, "C": 180, "gc": 50.0}, {"rank": 70, "id": "PAZ78468", "accession": "Z78468.1", "species": "P.adductum", "desc": "gi|2765593|emb|Z78468.1|PAZ78468 P.adductum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 610, "A": 137, "T": 168, "G": 160, "C": 145, "gc": 50.0}, {"rank": 71, "id": "PMZ78449", "accession": "Z78449.1", "species": "P.mastersianum", "desc": "gi|2765574|emb|Z78449.1|PMZ78449 P.mastersianum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 744, "A": 173, "T": 199, "G": 192, "C": 180, "gc": 50.0}, {"rank": 72, "id": "PBZ78439", "accession": "Z78439.1", "species": "P.barbatum", "desc": "gi|2765564|emb|Z78439.1|PBZ78439 P.barbatum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 592, "A": 135, "T": 161, "G": 160, "C": 136, "gc": 50.0}, {"rank": 73, "id": "PPZ78440", "accession": "Z78440.1", "species": "P.purpuratum", "desc": "gi|2765565|emb|Z78440.1|PPZ78440 P.purpuratum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 744, "A": 179, "T": 194, "G": 186, "C": 185, "gc": 49.87}, {"rank": 74, "id": "CMZ78522", "accession": "Z78522.1", "species": "C.macranthum", "desc": "gi|2765647|emb|Z78522.1|CMZ78522 C.macranthum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 700, "A": 160, "T": 191, "G": 195, "C": 154, "gc": 49.86}, {"rank": 75, "id": "PVZ78483", "accession": "Z78483.1", "species": "P.villosum", "desc": "gi|2765608|emb|Z78483.1|PVZ78483 P.villosum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 740, "A": 180, "T": 191, "G": 190, "C": 179, "gc": 49.86}, {"rank": 76, "id": "CFZ78517", "accession": "Z78517.1", "species": "C.flavum", "desc": "gi|2765642|emb|Z78517.1|CFZ78517 C.flavum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 752, "A": 182, "T": 196, "G": 203, "C": 171, "gc": 49.73}, {"rank": 77, "id": "CSZ78520", "accession": "Z78520.1", "species": "C.segawai", "desc": "gi|2765645|emb|Z78520.1|CSZ78520 C.segawai 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 753, "A": 172, "T": 208, "G": 212, "C": 161, "gc": 49.54}, {"rank": 78, "id": "PRZ78465", "accession": "Z78465.1", "species": "P.rothschildianum", "desc": "gi|2765590|emb|Z78465.1|PRZ78465 P.rothschildianum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 702, "A": 165, "T": 190, "G": 184, "C": 163, "gc": 49.43}, {"rank": 79, "id": "PLZ78472", "accession": "Z78472.1", "species": "P.lowii", "desc": "gi|2765597|emb|Z78472.1|PLZ78472 P.lowii 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 737, "A": 178, "T": 195, "G": 193, "C": 171, "gc": 49.39}, {"rank": 80, "id": "PBZ78452", "accession": "Z78452.1", "species": "P.bougainvilleanum", "desc": "gi|2765577|emb|Z78452.1|PBZ78452 P.bougainvilleanum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 743, "A": 178, "T": 198, "G": 193, "C": 174, "gc": 49.39}, {"rank": 81, "id": "PJZ78455", "accession": "Z78455.1", "species": "P.javanicum", "desc": "gi|2765580|emb|Z78455.1|PJZ78455 P.javanicum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 745, "A": 180, "T": 198, "G": 183, "C": 184, "gc": 49.26}, {"rank": 82, "id": "CPZ78516", "accession": "Z78516.1", "species": "C.passerinum", "desc": "gi|2765641|emb|Z78516.1|CPZ78516 C.passerinum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 726, "A": 174, "T": 195, "G": 193, "C": 164, "gc": 49.17}, {"rank": 83, "id": "PHZ78469", "accession": "Z78469.1", "species": "P.haynaldianum", "desc": "gi|2765594|emb|Z78469.1|PHZ78469 P.haynaldianum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 594, "A": 141, "T": 161, "G": 149, "C": 143, "gc": 49.16}, {"rank": 84, "id": "CPZ78519", "accession": "Z78519.1", "species": "C.pubescens", "desc": "gi|2765644|emb|Z78519.1|CPZ78519 C.pubescens 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 699, "A": 159, "T": 197, "G": 189, "C": 154, "gc": 49.07}, {"rank": 85, "id": "CCZ78521", "accession": "Z78521.1", "species": "C.calceolus", "desc": "gi|2765646|emb|Z78521.1|CCZ78521 C.calceolus 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 726, "A": 174, "T": 196, "G": 202, "C": 154, "gc": 49.04}, {"rank": 86, "id": "PPZ78470", "accession": "Z78470.1", "species": "P.parishii", "desc": "gi|2765595|emb|Z78470.1|PPZ78470 P.parishii 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 574, "A": 134, "T": 160, "G": 144, "C": 136, "gc": 48.78}, {"rank": 87, "id": "PAZ78444", "accession": "Z78444.1", "species": "P.appletonianum", "desc": "gi|2765569|emb|Z78444.1|PAZ78444 P.appletonianum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 688, "A": 168, "T": 185, "G": 170, "C": 165, "gc": 48.69}, {"rank": 88, "id": "CCZ78532", "accession": "Z78532.1", "species": "C.californicum", "desc": "gi|2765657|emb|Z78532.1|CCZ78532 C.californicum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 753, "A": 184, "T": 204, "G": 204, "C": 161, "gc": 48.47}, {"rank": 89, "id": "CLZ78529", "accession": "Z78529.1", "species": "C.lichiangense", "desc": "gi|2765654|emb|Z78529.1|CLZ78529 C.lichiangense 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 733, "A": 174, "T": 208, "G": 204, "C": 147, "gc": 47.89}, {"rank": 90, "id": "CFZ78524", "accession": "Z78524.1", "species": "C.formosanum", "desc": "gi|2765649|emb|Z78524.1|CFZ78524 C.formosanum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 740, "A": 178, "T": 208, "G": 205, "C": 148, "gc": 47.7}, {"rank": 91, "id": "CMZ78530", "accession": "Z78530.1", "species": "C.margaritaceum", "desc": "gi|2765655|emb|Z78530.1|CMZ78530 C.margaritaceum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 744, "A": 179, "T": 211, "G": 200, "C": 154, "gc": 47.58}, {"rank": 92, "id": "PSZ78475", "accession": "Z78475.1", "species": "P.supardii", "desc": "gi|2765600|emb|Z78475.1|PSZ78475 P.supardii 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 716, "A": 140, "T": 170, "G": 160, "C": 150, "gc": 43.3}, {"rank": 93, "id": "PLZ78443", "accession": "Z78443.1", "species": "P.lawrenceanum", "desc": "gi|2765568|emb|Z78443.1|PLZ78443 P.lawrenceanum 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 784, "A": 139, "T": 160, "G": 168, "C": 143, "gc": 39.67}, {"rank": 94, "id": "PSZ78462", "accession": "Z78462.1", "species": "P.sukhakulii", "desc": "gi|2765587|emb|Z78462.1|PSZ78462 P.sukhakulii 5.8S rRNA gene and ITS1 and ITS2 DNA", "len": 736, "A": 100, "T": 133, "G": 127, "C": 111, "gc": 32.34}];
+
+/* ---------- DNA strand decorative rule ---------- */
+function buildDnaRule(elId, length){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  const bases = ['A','T','G','C'];
+  let html = '';
+  for(let i=0;i<length;i++){
+    const b = bases[Math.floor(Math.random()*4)];
+    html += `<span class="${b}">${b}</span>`;
+  }
+  el.innerHTML = html;
+}
+['dnaRuleTop','dnaRuleMid','dnaRuleMid2','dnaRuleFooter'].forEach(id => buildDnaRule(id, 400));
+
+/* ---------- TOP 3 cards ---------- */
+const top3 = DATA.slice(0,3);
+const maxGC = Math.max(...DATA.map(d=>d.gc));
+const top3Grid = document.getElementById('top3Grid');
+top3.forEach((d,i)=>{
+  const card = document.createElement('div');
+  card.className = 'top-card' + (i===0 ? ' rank-1' : '');
+  card.innerHTML = `
+    <div class="rank-bar"><span>Peringkat #${i+1}</span><span>${d.accession}</span></div>
+    <div class="top-card-body">
+      <div class="sp-name">${d.species || '(spesies tidak teridentifikasi)'}</div>
+      <div class="acc">ID: ${d.id} · Panjang: ${d.len} bp</div>
+      <div class="gc-meter">
+        <div class="track"><div class="fill" style="width:${(d.gc/maxGC*100).toFixed(1)}%"></div></div>
+        <div class="val">${d.gc.toFixed(2)}% GC Content</div>
+      </div>
+      <div class="composition">
+        <span class="A">A ${d.A}</span>
+        <span class="T">T ${d.T}</span>
+        <span class="G">G ${d.G}</span>
+        <span class="C">C ${d.C}</span>
+      </div>
+    </div>`;
+  top3Grid.appendChild(card);
+});
+
+/* ---------- Bar chart (pure SVG, no external lib) ---------- */
+const svg = document.getElementById('barChart');
+const W = 1000, H = 420, padL = 45, padB = 30, padT = 15, padR = 10;
+const chartW = W - padL - padR, chartH = H - padT - padB;
+const n = DATA.length;
+const barGap = 1.5;
+const barW = chartW / n - barGap;
+const gcMax = Math.ceil(Math.max(...DATA.map(d=>d.gc)) / 10) * 10;
+const avg = DATA.reduce((s,d)=>s+d.gc,0)/n;
+
+function yFor(val){ return padT + chartH - (val/gcMax)*chartH; }
+
+let svgContent = '';
+// gridlines
+for(let g=0; g<=gcMax; g+=10){
+  const y = yFor(g);
+  svgContent += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#D8CFB8" stroke-width="1"/>`;
+  svgContent += `<text x="${padL-8}" y="${y+4}" font-size="11" fill="#5B5247" text-anchor="end" font-family="JetBrains Mono, monospace">${g}</text>`;
+}
+// average line
+const avgY = yFor(avg);
+svgContent += `<line x1="${padL}" y1="${avgY}" x2="${W-padR}" y2="${avgY}" stroke="#A9763F" stroke-width="1.3" stroke-dasharray="5,4"/>`;
+
+// bars
+DATA.forEach((d,i)=>{
+  const x = padL + i*(barW+barGap);
+  const y = yFor(d.gc);
+  const h = (padT + chartH) - y;
+  const color = i < 3 ? '#13442A' : '#A9D6B5';
+  svgContent += `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${barW.toFixed(2)}" height="${h.toFixed(2)}" fill="${color}">
+    <title>${d.species} (${d.accession}) — ${d.gc.toFixed(2)}%</title>
+  </rect>`;
+});
+
+// axis line
+svgContent += `<line x1="${padL}" y1="${padT+chartH}" x2="${W-padR}" y2="${padT+chartH}" stroke="#2B2520" stroke-width="1.2"/>`;
+
+svg.innerHTML = svgContent;
+document.getElementById('avgLabel').innerHTML = `<span class="legend-dot" style="background:#A9763F;border-radius:0;width:14px;height:2px;"></span>Rata-rata = ${avg.toFixed(2)}%`;
+
+/* ---------- Table ---------- */
+const tbody = document.getElementById('tableBody');
+function renderTable(filter=''){
+  tbody.innerHTML = '';
+  const f = filter.trim().toLowerCase();
+  DATA.forEach(d=>{
+    const hay = (d.species + ' ' + d.accession + ' ' + d.id).toLowerCase();
+    if(f && !hay.includes(f)) return;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="num">${d.rank}</td>
+      <td class="species">${d.species || '—'}</td>
+      <td class="mono">${d.accession}</td>
+      <td class="num">${d.len}</td>
+      <td class="num">${d.A}</td>
+      <td class="num">${d.T}</td>
+      <td class="num">${d.G}</td>
+      <td class="num">${d.C}</td>
+      <td class="num"><strong>${d.gc.toFixed(2)}</strong></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+renderTable();
+document.getElementById('searchBox').addEventListener('input', e => renderTable(e.target.value));
+</script>
+
+</body>
+</html>
